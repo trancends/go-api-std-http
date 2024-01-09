@@ -60,7 +60,7 @@ func RequestMethodDelete(next http.Handler) http.Handler {
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Method Client: ", r.Method)
-		w.Write([]byte("Hello World!"))
+		w.Write([]byte("TODO"))
 	})
 
 	http.Handle("/task", RequestMethodGet(http.HandlerFunc(getTask)))
@@ -150,12 +150,6 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteAllTask(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(responseError{Message: "Metod Not Allowed", Status: "error"})
-		return
-	}
-
 	tasks = []Task{}
 
 	w.WriteHeader(http.StatusOK)
@@ -167,12 +161,6 @@ func deleteAllTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteTask(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(responseError{Message: "Metod Not Allowed", Status: "error"})
-		return
-	}
-
 	var newTask Task
 	err := json.NewDecoder(r.Body).Decode(&newTask)
 	if err != nil {
@@ -187,13 +175,13 @@ func deleteTask(w http.ResponseWriter, r *http.Request) {
 	for index, task := range tasks {
 		if task.ID == newTask.ID {
 			tasks = append(tasks[:index], tasks[index+1:]...)
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(responseSucces{
+				Status:  "Succes",
+				Message: "Task Deleted",
+			})
+			return
 		}
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(responseSucces{
-			Status:  "Succes",
-			Message: "Task Deleted",
-		})
-
 	}
 
 	w.WriteHeader(http.StatusNotFound)
